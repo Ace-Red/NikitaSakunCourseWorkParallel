@@ -38,7 +38,7 @@ public class Worker extends Thread {
             // Pointer starting from that element to the last element in the matrix column
             // Get maximum value in the diagonal column
 
-            for (int x = startRow + 1; x < endRow; x++) { //endrow--n
+            for (int x = startRow + 1; x < endRow; x++) {
                 if (Math.abs(A[x][startRow]) > value) {
                     value = A[x][startRow];
                     pointer = x;

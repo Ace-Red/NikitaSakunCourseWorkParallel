@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -5,25 +6,23 @@ public class Algorithm {
 
     public static void main(String[] args) {
         int matrixSize = 7000;
-        int threads = 1;
+        int threads = 14;
         Random r = new Random();
         double [][] matrixA = new double[matrixSize][matrixSize+1];
-
-        // Randomly generate matrix
+        // Генерація матриці
         for (int i = 0; i < matrixSize; i++) {
             for (int j = 0; j < matrixSize+1; j++) {
                 matrixA[i][j] = r.nextDouble();
             }
         }
+        //printMatrix(matrixA);
         try {
-
             if (threads < 1) {
-                System.out.println("The number of threads was adjusted to be 1");
-                System.out.println("can't perform any operations on <1 thread");
+                System.out.println("Кількість процесорів має бути більше 1");
                 System.exit(1);
             }
             if (matrixA.length <= 1) {
-                System.err.println("The matrix size was <= [1x1]");
+                System.err.println("Розмірність матриці повина бути більшою за [1x1]");
                 System.exit(1);
             }
             final double begin = System.nanoTime();
@@ -31,8 +30,8 @@ public class Algorithm {
             final double duration = (System.nanoTime() - begin) / 1000000;
             System.out.println("\n" + duration + "ms");
             // Rounding up the answers
-            //Arrays.stream(result)
-                    //.forEach(value -> System.out.printf("%.2f%n", value));
+            Arrays.stream(result)
+                    .forEach(value -> System.out.printf("%.2f%n", value));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,7 +40,7 @@ public class Algorithm {
     private static double[] doParallelGaussianElimination(double[][] A, int numOfThreadsToUse) {
         //printMatrix(A);
 
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        int availableProcessors = Runtime.getRuntime().availableProcessors()+64;
         System.out.println("Total processors: " + availableProcessors);
         if (numOfThreadsToUse < availableProcessors) {
             availableProcessors = numOfThreadsToUse;
