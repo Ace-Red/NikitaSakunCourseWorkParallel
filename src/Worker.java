@@ -2,67 +2,49 @@ import java.util.concurrent.CountDownLatch;
 
 
 public class Worker extends Thread {
-    private final CountDownLatch latch;
-    private double[][] A;
-    private int startRow;
-    private final int endRow;
+    private final CountDownLatch countDownLatch;
+    private double[][] matrix;
+    private int firstRow;
+    private final int lastRow;
 
 
-    public Worker(double[][] A, int startRow, int endRow, CountDownLatch latch) {
-        this.A = A;
-        this.startRow = startRow;
-        this.endRow = endRow;
-        this.latch = latch;
+    public Worker(double[][] matrix, int firstRow, int lastRow, CountDownLatch countDownLatch) {
+        this.matrix = matrix;
+        this.firstRow = firstRow;
+        this.lastRow = lastRow;
+        this.countDownLatch = countDownLatch;
     }
-    /**
-     * Swaps rows
-     * Accessed by the worker threads
-     *
-     * @param A : Coefficient Matrix
-     * @param i : first row to  be swapped
-     * @param j : second row to  be swapped
-     */
-    public static void swapRows(double[][] A, int i, int j) {
-        for (int k = 0; k <= A.length; k++) {
-            double temp = A[i][k];
-            A[i][k] = A[j][k];
-            A[j][k] = temp;
+
+    public static void transportRows(double[][] matrix, int coefficientI, int coefficientJ) {
+        for (int k = 0; k <= matrix.length; k++) {
+            double temp = matrix[coefficientI][k];
+            matrix[coefficientI][k] = matrix[coefficientJ][k];
+            matrix[coefficientJ][k] = temp;
         }
     }
     public void run() {
-        int n = A.length;
-        for (; startRow < endRow; startRow++) {
-            int pointer = startRow;
-            double value = A[pointer][startRow];
-            // The pivots exits on diagonal elements <ie> A[i][i]
-            // Pointer starting from that element to the last element in the matrix column
-            // Get maximum value in the diagonal column
+        int sizeMatrix = matrix.length;
+        for (; firstRow < lastRow; firstRow++) {
+            int flagPointer = firstRow;
+            double number = matrix[flagPointer][firstRow];
 
-            for (int x = startRow + 1; x < endRow; x++) {
-                if (Math.abs(A[x][startRow]) > value) {
-                    value = A[x][startRow];
-                    pointer = x;
+            for (int x = firstRow + 1; x < lastRow; x++) {
+                if (Math.abs(matrix[x][firstRow]) > number) {
+                    number = matrix[x][firstRow];
+                    flagPointer = x;
                 }
             }
 
-            // latch.countDown();
-            // Make sure the current row has the max val. at the pivot position.
-            // Swap the origin row with MAX row
-
-            if (startRow != pointer) {
-                swapRows(A, startRow, pointer);
+            if (firstRow != flagPointer) {
+                transportRows(matrix, firstRow, flagPointer);
             }
-            latch.countDown();
-            // Iterate through the rows
-            // f = A[row][c] / A[pivot][c]
-            // Perform subtraction with multiple on the entire row
-            // Populate the bottom triangular matrix with 0's
-            for (int x = startRow + 1; x < endRow; x++) { //
-                // Multiplier
-                double f = A[x][startRow] / A[startRow][startRow];
-                for (int y = startRow + 1; y <= n; y++)
-                    A[x][y] -= A[startRow][y] * f;
-                A[x][startRow] = 0;
+            countDownLatch.countDown();
+
+            for (int x = firstRow + 1; x < lastRow; x++) {
+                double f = matrix[x][firstRow] / matrix[firstRow][firstRow];
+                for (int y = firstRow + 1; y <= sizeMatrix; y++)
+                    matrix[x][y] -= matrix[firstRow][y] * f;
+                matrix[x][firstRow] = 0;
             }
         }
     }
